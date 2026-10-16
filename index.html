@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>WaterNet - Sistema de Água</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="login-page">
+
+<div class="water-bg">
+  <div class="wave wave1"></div>
+  <div class="wave wave2"></div>
+  <div class="wave wave3"></div>
+  <div class="glow glow1"></div>
+  <div class="glow glow2"></div>
+  <div class="sunrays">
+    <span></span><span></span><span></span><span></span><span></span>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<div id="alertaVazamento" class="alerta-grande hidden">
+  <div class="alerta-icone">!</div>
+  <div class="alerta-texto">
+    <strong id="alertaTitulo">ATENÇÃO</strong>
+    <span id="alertaMsg">Possível vazamento detectado</span>
+  </div>
+  <button class="alerta-fechar" onclick="fecharAlertaGrande()">OK, entendi</button>
+</div>
+
+<header class="topbar">
+  <div class="topbar-logo">WaterNet</div>
+  <button class="btn-admin" onclick="mostrarForm('coord')">Entrar como Administrador</button>
+</header>
+
+<div id="telaPrimeiroAcesso" class="auth-wrap hidden">
+  <div class="card">
+    <h1>Primeiro Acesso</h1>
+    <p style="color:#8fb8e0">Bem-vindo. Defina agora a <strong>senha do administrador</strong>. Ela só pode ser definida <strong>uma vez</strong>.</p>
+    <div id="msgPrimeiro" class="msg"></div>
+    <label>Senha do administrador</label>
+    <input type="password" id="senhaCoord1" placeholder="Crie uma senha forte">
+    <label>Confirmar senha</label>
+    <input type="password" id="senhaCoord2" placeholder="Repita a senha">
+    <button onclick="definirSenhaCoordenador()">Salvar senha do administrador</button>
+  </div>
+</div>
+
+<div id="telaAuth" class="auth-wrap">
+  <div class="card hero-card">
+    <h1 class="hero-title">WaterNet</h1>
+    <p class="hero-sub">Sistema de Água</p>
+
+    <div id="msgAuth" class="msg"></div>
+
+    <div id="telaBotoes" class="hero-botoes">
+      <button class="btn-hero" onclick="mostrarForm('login')">Entrar</button>
+      <button class="btn-hero btn-hero-sec" onclick="mostrarForm('cad')">Cadastrar</button>
+    </div>
+
+    <div id="formLogin" class="hidden">
+      <h2>Entrar</h2>
+      <label>E-mail</label>
+      <input type="email" id="loginEmail" placeholder="seu@email.com">
+      <label>Senha</label>
+      <input type="password" id="loginSenha" placeholder="Sua senha">
+      <button onclick="fazerLogin()">Entrar</button>
+      <button class="btn-sec" onclick="voltarInicio()">Voltar</button>
+      <button class="btn-sec" onclick="mostrarForm('trab')">Sou trabalhador</button>
+    </div>
+
+    <div id="formCad" class="hidden">
+      <h2>Cadastrar</h2>
+      <label>E-mail</label>
+      <input type="email" id="cadEmail" placeholder="seu@email.com">
+      <label>Senha (mínimo 6 caracteres)</label>
+      <input type="password" id="cadSenha" placeholder="Crie uma senha">
+      <label>Confirmar senha</label>
+      <input type="password" id="cadSenha2" placeholder="Repita a senha">
+      <hr>
+      <label>Rua *</label>
+      <input type="text" id="cadRua" placeholder="Ex: Rua das Flores">
+      <label>Endereço / Número *</label>
+      <input type="text" id="cadEndereco" placeholder="Ex: 42 - Centro">
+      <label>Quantas pessoas moram na casa? *</label>
+      <select id="cadPessoas">
+        <option value="">-- Selecione --</option>
+        <option value="1">1 pessoa</option>
+        <option value="2">2 pessoas</option>
+        <option value="3">3 pessoas</option>
+        <option value="4">4 pessoas</option>
+        <option value="5">5 pessoas</option>
+        <option value="6">6 pessoas</option>
+        <option value="7">7 pessoas</option>
+        <option value="8">8 pessoas</option>
+        <option value="10">Mais de 8</option>
+      </select>
+      <label>Você tem lava-jato em casa? *</label>
+      <select id="cadLavaJato">
+        <option value="">-- Selecione --</option>
+        <option value="nao">Não tenho</option>
+        <option value="sim">Sim, tenho</option>
+      </select>
+      <button onclick="fazerCadastro()">Criar conta</button>
+      <button class="btn-sec" onclick="voltarInicio()">Voltar</button>
+    </div>
+
+    <div id="formCoord" class="hidden">
+      <h2>Administrador</h2>
+      <label>Senha do administrador</label>
+      <input type="password" id="coordSenha" placeholder="Digite a senha">
+      <button onclick="fazerLoginCoordenador()">Entrar</button>
+      <button class="btn-sec" onclick="voltarInicio()">Voltar</button>
+    </div>
+
+    <div id="formTrab" class="hidden">
+      <h2>Trabalhador</h2>
+      <label>E-mail</label>
+      <input type="email" id="trabEmail" placeholder="trabalhador@agua.com">
+      <label>PIN (4 dígitos)</label>
+      <input type="text" id="trabPin" maxlength="4" placeholder="0000" inputmode="numeric">
+      <button onclick="fazerLoginTrabalhador()">Entrar</button>
+      <button class="btn-sec" onclick="voltarInicio()">Voltar</button>
+    </div>
+  </div>
+</div>
+
+<div id="telaCargo" class="auth-wrap hidden">
+  <div class="card">
+    <h1>Escolha seu cargo</h1>
+    <p style="color:#8fb8e0">Você pode mudar depois na aba Configurações.</p>
+    <div id="msgCargo" class="msg"></div>
+    <button onclick="escolherCargo('tecnico')" style="text-align:left;padding:16px;margin-bottom:10px">
+      <strong>Técnico de Manutenção</strong><br><small>Manutenções</small>
+    </button>
+    <button onclick="escolherCargo('atendente')" style="text-align:left;padding:16px">
+      <strong>Atendente</strong><br><small>Usuários, Suporte</small>
+    </button>
+  </div>
+</div>
+
+<div id="telaApp" class="app-layout hidden">
+  <aside class="sidebar">
+    <div class="logo">WaterNet</div>
+    <button id="tabInfo" class="nav-item active" onclick="trocarAba('info')">Início</button>
+    <button id="tabConta" class="nav-item" onclick="trocarAba('conta')">Conta de Água</button>
+    <button id="tabConfig" class="nav-item" onclick="trocarAba('config')">Configurações</button>
+    <button id="tabCobr" class="nav-item" onclick="trocarAba('cobr')">Cobranças</button>
+    <div class="spacer"></div>
+    <button class="nav-item btn-sair" onclick="sair()">Sair</button>
+  </aside>
+
+  <main class="conteudo">
+    <div id="msgApp" class="msg"></div>
+    <div id="avisoParada" class="hidden" style="background:#3a0f18;border:1px solid #6b1e2a;color:#ff8fa3;padding:16px;border-radius:10px;margin-bottom:16px;font-weight:600"></div>
+
+    <div id="abaInfo" class="card">
+      <h2>Início</h2>
+      <div id="cardDispositivo" class="dispositivo-card">
+        <div class="luz-grande" id="luzDispositivo">●</div>
+        <div class="dispositivo-status" id="statusDispositivo">BOM</div>
+        <div class="dispositivo-msg" id="fraseDispositivo">Está tudo bem.</div>
+        <div class="sensor-bar-wrap">
+          <div class="sensor-bar"><div class="sensor-fill" id="sensorFill"></div></div>
+          <div class="sensor-legenda">
+            <span>0–49cm</span><span>50–150cm</span><span>151–200cm</span>
+          </div>
+        </div>
+        <button class="btn-sim" onclick="simularAlerta()">Simular aviso</button>
+      </div>
+
+      <div id="cardVazamento" class="vazamento-card">
+        <div class="vazamento-icone" id="vazIcone">OK</div>
+        <div class="vazamento-texto">
+          <strong id="vazTitulo">Sem sinais de vazamento</strong>
+          <span id="vazFrase">Seu consumo está dentro do esperado.</span>
+        </div>
+      </div>
+
+      <div class="sobre-dispositivo">
+        <h3>Sobre o dispositivo</h3>
+        <p>O dispositivo WaterNet foi instalado na sua caixa d'água e monitora o <strong>nível da água em tempo real</strong>. Ele identifica situações de risco, como <strong>transbordamento</strong> ou <strong>consumo fora do padrão</strong>, e envia um alerta direto para o seu painel.</p>
+        <p>A luz do dispositivo mostra rapidamente o estado atual:</p>
+        <ul class="lista-estados">
+          <li><span class="dot verde"></span> <strong>Bom</strong> — nível de 0 a 49 cm. Tudo funcionando normalmente.</li>
+          <li><span class="dot amarelo"></span> <strong>Atenção</strong> — nível de 50 a 150 cm. Fique de olho.</li>
+          <li><span class="dot vermelho"></span> <strong>Crítico</strong> — nível acima de 150 cm. Avise o técnico imediatamente.</li>
+        </ul>
+        <p class="rodape-info">Sempre que o sistema identificar um possível vazamento, você receberá um aviso em destaque na tela.</p>
+      </div>
+
+      <hr>
+      <h2>Informações da Conta</h2>
+      <div class="info-box"><strong>ID da conta:</strong> <span id="infoId">-</span></div>
+      <div class="info-box">
+        <strong>E-mail cadastrado:</strong><br>
+        <span id="infoEmail">-</span>
+        <p style="color:#8fb8e0;font-size:13px;margin:8px 0 0">Para trocar o e-mail, fale com o coordenador.</p>
+      </div>
+    </div>
+
+    <div id="abaConta" class="card hidden">
+      <h2>Conta de Água</h2>
+      <p>Veja seu consumo e valor mês a mês.</p>
+      <div class="info-box"><strong>Consumo atual:</strong> <span id="contaConsumo">0</span> m³</div>
+      <div class="info-box"><strong>Valor atual:</strong> R$ <span id="contaValor">0,00</span></div>
+      <div class="grafico-box">
+        <h3 style="margin-top:0">Histórico de consumo (m³)</h3>
+        <canvas id="graficoConsumo"></canvas>
+      </div>
+      <div class="grafico-box" style="margin-top:16px">
+        <h3 style="margin-top:0">Histórico de valores (R$)</h3>
+        <canvas id="graficoValor"></canvas>
+      </div>
+      <button class="btn-sec" style="margin-top:16px" onclick="popularHistorico()">Popular com dados de exemplo</button>
+    </div>
+
+    <div id="abaConfig" class="card hidden">
+      <h2>Configurações</h2>
+      <p>Como você paga sua conta? <strong>(obrigatório)</strong></p>
+      <label>Forma de pagamento</label>
+      <select id="formaPagamento">
+        <option value="">-- Selecione --</option>
+        <option value="digital">Pagar digitalmente</option>
+        <option value="fisico">Pagar fisicamente</option>
+      </select>
+      <button onclick="salvarFormaPagamento()">Salvar preferência</button>
+
+      <hr>
+      <h2>Meu endereço</h2>
+      <label>Rua</label>
+      <input type="text" id="editRua" placeholder="Ex: Rua das Flores">
+      <label>Endereço / Número</label>
+      <input type="text" id="editEndereco" placeholder="Ex: 42 - Centro">
+      <label>Quantas pessoas moram na casa?</label>
+      <select id="editPessoas">
+        <option value="1">1 pessoa</option>
+        <option value="2">2 pessoas</option>
+        <option value="3">3 pessoas</option>
+        <option value="4">4 pessoas</option>
+        <option value="5">5 pessoas</option>
+        <option value="6">6 pessoas</option>
+        <option value="7">7 pessoas</option>
+        <option value="8">8 pessoas</option>
+        <option value="10">Mais de 8</option>
+      </select>
+      <label>Você tem lava-jato em casa?</label>
+      <select id="editLavaJato">
+        <option value="nao">Não tenho</option>
+        <option value="sim">Sim, tenho</option>
+      </select>
+      <button onclick="salvarEndereco()">Salvar endereço</button>
+
+      <hr>
+      <h2>Senha</h2>
+      <label>Senha antiga</label>
+      <input type="password" id="senhaAntiga" placeholder="Senha atual">
+      <div class="row">
+        <div><label>Nova senha</label><input type="password" id="senhaNova" placeholder="Nova senha"></div>
+        <div><label>Confirmar nova senha</label><input type="password" id="senhaNova2" placeholder="Repita"></div>
+      </div>
+      <button onclick="trocarSenha()">Atualizar senha</button>
+
+      <hr>
+      <h2>Suporte — Vazamento / Acidente</h2>
+      <p>Avise-nos caso tenha notado um vazamento ou acidente.</p>
+      <label>Descreva o ocorrido</label>
+      <textarea id="msgSuporte" rows="4" placeholder="Ex: Vazamento na rua X em frente ao número 42..."></textarea>
+      <button class="btn-sec" onclick="enviarSuporte()">Enviar aviso</button>
+    </div>
+
+    <div id="abaCobr" class="card hidden">
+      <h2>Cobranças</h2>
+      <p>Cobranças aparecem aqui após o coordenador enviar os boletos.</p>
+      <div id="listaCobrancas"></div>
+    </div>
+  </main>
+
+  <aside class="bot-painel">
+    <div class="bot-header">Assistente Virtual</div>
+    <div class="bot-body" id="botUserBody"></div>
+    <div class="bot-sugestoes" id="botUserSugestoes"></div>
+    <div class="bot-footer">
+      <input type="text" id="botUserInput" placeholder="Digite sua dúvida..." autocomplete="off" name="bot-user-input" onkeypress="if(event.key==='Enter')enviarBotUser()">
+      <button onclick="enviarBotUser()">Enviar</button>
+    </div>
+  </aside>
+</div>
+
+<div id="telaCoord" class="app-layout hidden">
+  <aside class="sidebar">
+    <div class="logo">Administrador</div>
+    <button id="tabFin" class="nav-item active" onclick="trocarAbaCoord('fin')">Financeiro</button>
+    <button id="tabUsers" class="nav-item" onclick="trocarAbaCoord('users')">Usuários</button>
+    <button id="tabFunc" class="nav-item" onclick="trocarAbaCoord('func')">Funcionários</button>
+    <button id="tabCoordinfo" class="nav-item" onclick="trocarAbaCoord('coordinfo')">Informações</button>
+    <div class="spacer"></div>
+    <button class="nav-item btn-sair" onclick="sairCoord()">Sair</button>
+  </aside>
+
+  <main class="conteudo">
+    <div id="msgCoord" class="msg"></div>
+    <div id="abaFin" class="card">
+      <h2>Financeiro</h2>
+      <p>Acompanhe o faturamento do mês.</p>
+      <div class="total-box">
+        <h3>TOTAL FATURADO NO MÊS</h3>
+        <div class="valor">R$ <span id="totalFaturado">0,00</span></div>
+      </div>
+      <div class="total-box" style="background:linear-gradient(135deg,#1e9e57,#4ade80)">
+        <h3>TOTAL RECEBIDO NO MÊS</h3>
+        <div class="valor">R$ <span id="totalRecebido">0,00</span></div>
+      </div>
+      <div class="total-box" style="background:linear-gradient(135deg,#dc3545,#ff6b7d)">
+        <h3>TOTAL PENDENTE NO MÊS</h3>
+        <div class="valor">R$ <span id="totalPendente">0,00</span></div>
+      </div>
+
+      <button onclick="enviarBoletosTodos()" style="margin-top:16px">Enviar boleto para TODOS os usuários</button>
+
+      <hr>
+      <h3>Contas do mês</h3>
+      <div id="listaFinanceiro"></div>
+    </div>
+    <div id="abaUsers" class="card hidden">
+      <h2>Usuários</h2>
+      <p>Veja o status de pagamento de cada usuário.</p>
+      <div id="listaUsuarios"></div>
+    </div>
+    <div id="abaFunc" class="card hidden">
+      <h2>Funcionários</h2>
+      <p>Crie PINs de acesso para os trabalhadores. Eles vão usar no login.</p>
+      <div class="info-box" style="border-left-color:#ffc107;background:#2a2210">
+        Regras: <strong>PIN sempre 4 dígitos</strong> (ex: 1234). Se o <strong>e-mail já existe</strong>, o PIN precisa ser <strong>diferente</strong>.
+      </div>
+      <label>E-mail do trabalhador</label>
+      <input type="email" id="funcEmail" placeholder="trabalhador@agua.com">
+      <label>PIN (4 dígitos)</label>
+      <input type="text" id="funcPin" maxlength="4" placeholder="0000" inputmode="numeric">
+      <button onclick="criarFuncionario()">Criar PIN</button>
+      <hr>
+      <h3>PINs criados</h3>
+      <div id="listaFuncionarios"></div>
+    </div>
+    <div id="abaCoordinfo" class="card hidden">
+      <h2>Informações do Administrador</h2>
+
+      <div class="info-box"><strong>Carga horária:</strong> <span id="coordCarga">-</span></div>
+      <label>Alterar carga horária</label>
+      <input type="text" id="inputCarga" placeholder="Ex: 08:00 - 17:00">
+      <button onclick="salvarCarga()">Salvar carga horária</button>
+
+      <hr>
+      <h3>Trocar senha do administrador</h3>
+      <div id="msgSenhaCoord" class="msg"></div>
+      <label>Senha atual</label>
+      <input type="password" id="coordSenhaAtual" placeholder="Digite a senha atual">
+      <label>Nova senha</label>
+      <input type="password" id="coordSenhaNova" placeholder="Nova senha (mínimo 4 caracteres)">
+      <label>Confirmar nova senha</label>
+      <input type="password" id="coordSenhaNova2" placeholder="Repita a nova senha">
+      <button onclick="trocarSenhaCoord()">Atualizar senha</button>
+
+      <hr>
+      <div class="info-box"><strong>Total de atendimentos:</strong> <span id="coordAtend">0</span></div>
+      <button class="btn-sec" onclick="zerarAtendimentos()">Zerar contador de atendimentos</button>
+    </div>
+  </main>
+
+  <aside class="bot-painel">
+    <div class="bot-header">Assistente do Administrador</div>
+    <div class="bot-body" id="botCoordBody"></div>
+    <div class="bot-sugestoes" id="botCoordSugestoes"></div>
+    <div class="bot-footer">
+      <input type="text" id="botCoordInput" placeholder="Como posso ajudar?" autocomplete="off" name="bot-coord-input" onkeypress="if(event.key==='Enter')enviarBotCoord()">
+      <button onclick="enviarBotCoord()">Enviar</button>
+    </div>
+  </aside>
+</div>
+
+<div id="telaTrab" class="app-layout hidden">
+  <aside class="sidebar">
+    <div class="logo" id="trabLogo">Trabalhador</div>
+    <div id="trabMenu"></div>
+    <div class="spacer"></div>
+    <button class="nav-item btn-sair" onclick="sairTrabalhador()">Sair</button>
+  </aside>
+
+  <main class="conteudo">
+    <div id="msgTrab" class="msg"></div>
+    <div id="trabConteudo"></div>
+  </main>
+
+  <aside class="bot-painel">
+    <div class="bot-header">Assistente do Trabalhador</div>
+    <div class="bot-body" id="botTrabBody"></div>
+    <div class="bot-sugestoes" id="botTrabSugestoes"></div>
+    <div class="bot-footer">
+      <input type="text" id="botTrabInput" placeholder="Como posso ajudar?" autocomplete="off" name="bot-trab-input" onkeypress="if(event.key==='Enter')enviarBotTrab()">
+      <button onclick="enviarBotTrab()">Enviar</button>
+    </div>
+  </aside>
+</div>
+
+<div id="modalEnvioTecnico" class="modal-overlay hidden">
+  <div class="modal-box">
+    <h2>Enviar para Técnico</h2>
+    <div id="msgModalTec" class="msg"></div>
+    <label>Rua *</label>
+    <input type="text" id="modalRua" placeholder="Ex: Rua das Flores">
+    <label>Endereço / Número *</label>
+    <input type="text" id="modalEndereco" placeholder="Ex: 42 - Centro">
+    <label>Escolha o Técnico (apenas livres)</label>
+    <div id="listaTecnicosLivres"></div>
+    <div style="display:flex;gap:10px;margin-top:14px">
+      <button class="btn-sec" onclick="fecharModalTecnico()">Cancelar</button>
+      <button class="btn-ok" onclick="confirmarEnvioTecnico()">Confirmar envio</button>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="script.js"></script>
+</body>
+</html>
